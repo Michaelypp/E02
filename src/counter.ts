@@ -52,6 +52,9 @@ function updateStats(snapshot: ShieldSnapshot) {
   diagnostic.textContent = `Inspector deliveries: ${panelUpdates}`;
   renderStats(snapshot);
 }
+function onInspectorChange() {
+  updateStats(getShieldSnapshot());
+}
 
 function renderStats(snapshot: ShieldSnapshot) {
   if (!panel) return;
@@ -66,9 +69,8 @@ function setCount(next: number) {
 
   count = bounded;
   shieldEvents.dispatchEvent(new Event("change"));
-
-  if (panel) updateStats(getShieldSnapshot());
 }
+
 shieldEvents.addEventListener("change", () => {
   drawMeter(getShieldSnapshot());
 });
@@ -83,12 +85,16 @@ document.querySelector<HTMLButtonElement>("#counter-reset")!.onclick = () => {
 };
 document.querySelector<HTMLButtonElement>("#counter-open")!.onclick = () => {
   if (panel) return;
+
   panel = document.createElement("p");
   host.append(panel);
   renderStats(getShieldSnapshot());
+  shieldEvents.addEventListener("change", onInspectorChange);
 };
 document.querySelector<HTMLButtonElement>("#counter-close")!.onclick = () => {
   if (!panel) return;
+
+  shieldEvents.removeEventListener("change", onInspectorChange);
   panel.remove();
   panel = null;
 };
