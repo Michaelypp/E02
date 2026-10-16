@@ -22,6 +22,33 @@ type Command = {
   label: string;
   execute: () => void;
 };
+
+const pendingCommands: Command[] = [];
+
+const pendingList = document.querySelector<HTMLOListElement>("#rover-pending")!;
+const queueStatus = document.querySelector<HTMLParagraphElement>(
+  "#rover-queue-status",
+)!;
+
+function drawQueue() {
+  pendingList.replaceChildren();
+
+  for (const command of pendingCommands) {
+    const item = document.createElement("li");
+    item.textContent = command.label;
+    pendingList.append(item);
+  }
+
+  queueStatus.textContent = pendingCommands.length === 0
+    ? "Empty"
+    : `${pendingCommands.length} commands pending`;
+}
+
+function enqueueCommand(command: Command) {
+  pendingCommands.push(command);
+  drawQueue();
+}
+
 const forwardCommand: Command = {
   label: "Forward",
   execute: () => {
@@ -67,16 +94,31 @@ function drawRover() {
 }
 
 document.querySelector<HTMLButtonElement>("#rover-forward")!.onclick = () => {
-  runCommand(forwardCommand);
+  enqueueCommand(forwardCommand);
 };
 
 document.querySelector<HTMLButtonElement>("#rover-right")!.onclick = () => {
-  runCommand(rightCommand);
+  enqueueCommand(rightCommand);
+};
+document.querySelector<HTMLButtonElement>("#rover-run")!.onclick = () => {
+  while (pendingCommands.length > 0) {
+    const command = pendingCommands.shift()!;
+    runCommand(command);
+  }
+  drawQueue();
+};
+
+document.querySelector<HTMLButtonElement>("#rover-clear")!.onclick = () => {
+  pendingCommands.length = 0;
+  drawQueue();
 };
 document.querySelector<HTMLButtonElement>("#rover-reset")!.onclick = () => {
   x = 2;
   y = 2;
   direction = 0;
+  pendingCommands.length = 0;
   drawRover();
+  drawQueue();
 };
 drawRover();
+drawQueue();
