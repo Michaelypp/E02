@@ -27,7 +27,7 @@ function getShieldSnapshot(): ShieldSnapshot {
 let count = 0;
 let panel: HTMLParagraphElement | null = null;
 let panelUpdates = 0;
-
+const shieldEvents = new EventTarget();
 function drawMeter(snapshot: ShieldSnapshot) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -65,11 +65,13 @@ function setCount(next: number) {
   if (bounded === count) return;
 
   count = bounded;
-  const snapshot = getShieldSnapshot();
-  drawMeter(snapshot);
-  if (panel) updateStats(snapshot);
-}
+  shieldEvents.dispatchEvent(new Event("change"));
 
+  if (panel) updateStats(getShieldSnapshot());
+}
+shieldEvents.addEventListener("change", () => {
+  drawMeter(getShieldSnapshot());
+});
 document.querySelector<HTMLButtonElement>("#counter-less")!.onclick = () => {
   setCount(count - 1);
 };
