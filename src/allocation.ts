@@ -5,8 +5,26 @@ const ctx = canvas.getContext("2d")!;
 const readout = document.querySelector<HTMLParagraphElement>(
   "#allocation-readout",
 )!;
+type ShiftResult = {
+  assignedSupply: number;
+  production: number;
+  consumption: number;
+  balance: number;
+};
+
+function calculateShift(assignedSupply: number): ShiftResult {
+  const production = assignedSupply * 3;
+  const consumption = 6;
+
+  return {
+    assignedSupply,
+    production,
+    consumption,
+    balance: production - consumption,
+  };
+}
 let assignedSupply = 2;
-function drawCrew() {
+function drawCrew(assignedSupply: number) {
   for (let i = 0; i < 6; i++) {
     ctx.fillStyle = i < assignedSupply ? "#27766b" : "#c9d2c9";
     ctx.fillRect(18 + i * 45, 16, 36, 36);
@@ -16,12 +34,16 @@ function drawCrew() {
   }
 }
 function updateAllocation() {
-  const production = assignedSupply * 3;
-  const consumption = 6;
-  const balance = production - consumption;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawCrew();
+  const result = calculateShift(assignedSupply);
+  const {
+    assignedSupply: assignedCount,
+    production,
+    consumption,
+    balance,
+  } = result;
 
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawCrew(assignedCount);
   ctx.fillStyle = "#233e43";
   ctx.font = "14px system-ui";
   ctx.fillText(`Producers: ${assignedSupply} / 6`, 18, 76);
